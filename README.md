@@ -1,4 +1,4 @@
-<img src="./Pixel%20art%20developer%20studio%2C%20city%20skyline.png" width="100%" alt="Pixel-art developer studio overlooking a city skyline, with screens showing LiveKaart, CreAIve Labs, and CUDA experiments.">
+\<img src="./Pixel%20art%20developer%20studio%2C%20city%20skyline.png" width="100%" alt="Pixel-art developer studio overlooking a city skyline, with screens showing LiveKaart, CreAIve Labs, and CUDA experiments.">
 
 <h1 align="center">Varun Kumar Reddy Nemilidinne</h1>
 
@@ -67,11 +67,74 @@ A groomer answering a call and a landscaper writing an estimate need different t
 - **Security:** default-deny JWT/JWKS gateway, PostgreSQL row-level security, signed idempotent webhooks, and **121 backend tests** with automatic rollback.
 - **Scale:** **15 trade dashboards** and **211 API routes**, built and run as the sole engineer.
 
+#### 🏗️ System design · 20 steps from sign-up to safe release
+
+One rule runs through the whole design: **AI proposes, code decides.** Models draft, rank, and answer. Deterministic code validates, isolates, and publishes.
+
+```mermaid
+flowchart LR
+    subgraph PV["① – ⑩ Provision a business"]
+        direction TB
+        A["①–③ Tenant + trade template + durable workflow"] --> B["④–⑦ 8 agents propose · Pydantic outputs · tiered models · no DB writes"]
+        B --> K["⑧–⑩ Code decides · ~175 checks · simulation · Playwright"]
+    end
+
+    subgraph CL["Clients"]
+        direction TB
+        D["15 trade dashboards"]
+        W["Website assistant"]
+        PH["AI phone agents"]
+    end
+
+    D & W & PH --> G["⑪ Default-deny JWT/JWKS gateway"]
+    G --> R["⑬ AI runtime · rate + token/cost budgets"]
+    R --> Q{"⑭ Answerable in SQL?"}
+    Q -- "yes · $0" --> DB[("⑫ Supabase Postgres · row-level security per tenant")]
+    Q -- no --> H["⑮ Hybrid retrieval · full-text + pgvector · RRF"]
+    H --> M["⑯ Model call · prompt caching"]
+    H --> DB
+    WH["⑰ Signed, idempotent webhooks"] --> DB
+    K -- publish --> DB
+    R -.-> O["⑱ OpenTelemetry traces"]
+
+    subgraph SH["⑲ – ⑳ Ship"]
+        direction TB
+        CI["⑲ CI gates · 121 tests · isolation proof · 120-case eval"] --> K3["⑳ k3s on Oracle Cloud · auto-rollback"]
+    end
+```
+
 <details>
-<summary><b>Stack behind CreAIve Labs</b></summary>
+<summary><b>Read all 20 steps</b></summary>
 <br>
 
-Next.js · Supabase PostgreSQL · Python AI runtime with tenant-scoped rate and token/cost budgets · FastAPI · LangGraph · Temporal · Redis · MCP · OpenTelemetry · k3s Kubernetes on Oracle Cloud
+**Provision: agents propose, code decides**
+
+1. **Tenant created.** A business signs up and gets its own tenant ID; every row it will ever own carries that ID.
+2. **Trade template chosen.** The business maps to one of **15 trade dashboards**, so a groomer and a landscaper start from different tools.
+3. **Durable workflow starts.** Provisioning runs on a Postgres-backed workflow engine, so a crash resumes from the last finished step instead of starting over.
+4. **Eight agents draft.** An **8-agent pipeline** drafts the business's configuration.
+5. **Structured outputs only.** Every agent returns a **Pydantic** schema; anything that doesn't fit the shape is rejected, not repaired by guesswork.
+6. **Tiered model escalation.** Work starts on a cheaper model and escalates to a stronger one only when it fails.
+7. **No database writes from AI.** Agents return proposals. They have no path to write to the database.
+8. **Deterministic checks.** Code runs **~175 checks** against every proposal.
+9. **Simulation.** The configured assistant is exercised before any customer sees it.
+10. **Browser verification, then publish.** **Playwright** checks the rendered experience; only a passing configuration is published.
+
+**Serve: every request is isolated, budgeted, and cheap by default**
+
+11. **Default-deny gateway.** Every call from dashboards, the website assistant, or phone agents passes a **JWT/JWKS** gateway that rejects anything not explicitly allowed.
+12. **Isolation in the database itself.** **PostgreSQL row-level security** scopes every query to its tenant, so a bug in app code still can't read another business's data.
+13. **Budgets before models.** The **Python AI runtime** enforces per-tenant rate limits and token/cost budgets before any model is called.
+14. **SQL first.** If a question can be answered from data, SQL answers it, at **$0** model cost.
+15. **Hybrid retrieval.** Otherwise, full-text search and **pgvector** results are fused with **Reciprocal Rank Fusion (RRF)**.
+16. **Model call with caching.** The model gets only what it needs; **prompt caching** cut research cost from **$2.41 to $1.16**. The website assistant runs on **FastAPI, LangGraph, Temporal, Redis, and MCP**.
+17. **Safe inbound events.** External events arrive through **signed, idempotent webhooks**, so a forged or repeated event changes nothing.
+18. **Everything traced.** **OpenTelemetry** follows each request through gateway, runtime, retrieval, and model.
+
+**Ship: releases have to prove they're safe**
+
+19. **CI gates.** A release must pass **121 backend tests**, prove **0 of 303 tables publicly readable** and **0 of 256 leaking across tenants**, and clear the assistant's **120-case / 15-metric eval gate**.
+20. **Deploy with a way back.** Passing builds deploy to **k3s Kubernetes on Oracle Cloud** with **automatic rollback** if the release goes bad.
 
 </details>
 
