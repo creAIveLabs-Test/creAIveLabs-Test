@@ -1,77 +1,123 @@
-<img src="./Pixel%20art%20developer%20studio%2C%20city%20skyline.png" width="100%" alt="Varun Reddy’s workspace featuring LiveKaart, CreAIve Labs, and CUDA C++ experiments.">
+<img src="./Pixel%20art%20developer%20studio%2C%20city%20skyline.png" width="100%" alt="Pixel-art developer studio overlooking a city skyline, with screens showing LiveKaart, CreAIve Labs, and CUDA experiments.">
 
 <h1 align="center">Varun Kumar Reddy Nemilidinne</h1>
 
 <p align="center">
-  Software & AI Engineer · Virginia, USA
+  <b>Software & AI Engineer</b> · Backend · Streaming Data · Production AI · Virginia, USA
 </p>
 
 <p align="center">
-  <a href="https://livekaart.com">LiveKaart</a> ·
-  <a href="https://creaivelabs.com">CreAIve Labs</a> ·
-  <a href="https://humanqa.ai">HumanQA</a> ·
-  <a href="https://www.linkedin.com/in/vkrnemilidinne/">LinkedIn</a>
+  <a href="https://livekaart.com"><img src="https://img.shields.io/badge/LiveKaart-live-8B1E1E?style=flat-square" alt="LiveKaart"></a>
+  <a href="https://creaivelabs.com"><img src="https://img.shields.io/badge/CreAIve%20Labs-live-8B1E1E?style=flat-square" alt="CreAIve Labs"></a>
+  <a href="https://humanqa.ai"><img src="https://img.shields.io/badge/HumanQA-building-555555?style=flat-square" alt="HumanQA"></a>
+  <a href="https://www.linkedin.com/in/vkrnemilidinne/"><img src="https://img.shields.io/badge/LinkedIn-connect-0A66C2?style=flat-square&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
+  <a href="mailto:hello@creaivelabs.com"><img src="https://img.shields.io/badge/Email-say%20hello-222222?style=flat-square&logo=gmail&logoColor=white" alt="Email"></a>
 </p>
 
-I built two live products: LiveKaart, a grocery search app, and CreAIve Labs, an AI platform for local service businesses. I’m now building my third product and learning CUDA C++ to understand how data moves between a CPU and a GPU.
+<p align="center">
+  <i>I build systems, then try to break them, then write down the numbers.</i>
+</p>
 
-I like engineering questions I can test. Can a shopper get an accurate stock answer without waiting for a model? If a Kafka broker goes down during a payment run, does every transaction still reach the ledger? Here’s what I found.
+---
 
-## Products I’ve shipped
+I've shipped two live products on my own: **LiveKaart**, a grocery search and price-comparison app, and **CreAIve Labs**, an AI platform for local service businesses. I'm building a third, **HumanQA**, and learning CUDA C++ to see how data really moves between a CPU and a GPU.
+
+Most portfolios list what someone built. This one lists **questions I asked and what the measurements said.**
+
+## 🧪 Questions I answered with measurements
+
+| The question | How I tested it | The answer |
+| --- | --- | --- |
+| Can a shopper get an accurate stock answer without waiting on a model? | Routed plain lookups to PostgreSQL and reused validated answers keyed to the catalog version | Median latency **3.7 s → 1.5 s**. Repeats in **0.8 s** at **$0** model cost |
+| If a Kafka broker dies mid-payment run, does every transaction still reach the ledger? | Killed 1 of 3 brokers during a 2M-transaction run | Recovered in **8 s**. **0 lost, 0 duplicate** ledger rows |
+| How fast can one laptop push a correct payments pipeline? | Java + Kafka Streams + Redis + PostgreSQL, idempotent end to end | **56,638 tx/s** sustained over 2M transactions |
+| Why did my AI release gate fail only *sometimes*? | Traced a flaky eval to retrieval ranking | Recall on that eval **0.8 → 1.0** |
+| Does prompt caching actually matter for research tasks? | Measured cost per research run before and after | **$2.41 → $1.16** per run |
+| Can tenant isolation be *proven*, not just promised? | CI checks every table on every release | **0 of 303** tables publicly readable, **0 of 256** leaking across tenants |
+| Which ad should a user see? | Simulated 13,500 impressions across ranking strategies | Bid × pCTR earned **+43% revenue per 1K** impressions, even as CTR fell 6.73% → 5.21% |
+| Why was my first CUDA timing wrong? | Warmed up the GPU, averaged 100 launches with CUDA events | First number was inflated **17×**. Real: **0.043 ms**, **294 GB/s** |
+
+## 🚀 Products I've shipped
 
 ### [LiveKaart](https://livekaart.com) · Grocery search and price comparison
 
-A shopper asking “Is toor dal in stock?” needs a current catalog answer. I built LiveKaart’s assistant to look up straightforward questions in PostgreSQL, reuse answers while the catalog version matches, and call a model when a question needs one.
+A shopper asking *"Is toor dal in stock?"* needs the current catalog, not a model's guess. So the assistant asks the database first and only calls a model when the question actually needs one.
 
-- **Speed:** Median assistant latency fell from **3.7 s to 1.5 s**. One repeated query took **0.8 s** from cache versus **5.5 s** through the model, with no model charge on the cache hit.
-- **Quality:** I tested releases against **60 reference queries**, measuring whether the right products appeared and how high they ranked.
-- **Scope:** I shipped the first version solo in **7 weeks**, including the shopper experience, store and admin tools, and a React Native mobile app.
+```mermaid
+flowchart LR
+    Q["Shopper question"] --> L{"Plain product lookup?"}
+    L -- yes --> DB[("PostgreSQL")]
+    L -- no --> C{"Validated answer for this catalog version?"}
+    C -- yes --> R["Reuse answer · 0.8 s · $0"]
+    C -- no --> M["Model call"] --> V["Validate"] --> S["Store, keyed to catalog version"]
+```
+
+- **Speed:** median assistant latency **3.7 s → 1.5 s**; a repeated query took **0.8 s** from cache vs **5.5 s** through the model.
+- **Quality:** every deploy gated on **60 golden queries** scored with Precision, Recall, NDCG, and MRR.
+- **Uptime:** **99.91%** across **2,177** probes, watched from a 21-tab observability console I built.
+- **Scope:** shipped solo in **7 weeks / 268 commits**: web app, store and admin tools, and an Expo React Native app for iOS and Android.
 
 ### [CreAIve Labs](https://creaivelabs.com) · AI for local service businesses
 
-A groomer handling a customer call and a landscaper preparing an estimate need different tools. I built a platform with **15 trade dashboards**, per-business AI phone agents, and a shared runtime that keeps each business’s data separate.
+A groomer answering a call and a landscaper writing an estimate need different tools. CreAIve Labs gives each trade its own dashboard and AI phone agent, on one shared runtime that keeps every business's data separate.
 
-- **Setup:** An **8-agent workflow** prepares each business configuration. Application code validates the output, runs simulations, and checks the experience in Playwright before publishing.
-- **Reliability:** The website assistant has to pass **120 test cases across 15 metrics** before release. When a check failed intermittently, I traced it to search ranking and raised recall on that evaluation from **0.8 to 1.0**.
-- **Cost:** Straightforward business questions use SQL directly. For research tasks that need a model, prompt caching reduced the measured cost from **$2.41 to $1.16**.
+- **Setup without blind trust:** an **8-agent pipeline** drafts each business's configuration, but agents never write to the database. Code runs **~175 checks**, simulations, and Playwright verification before anything publishes.
+- **Release gate:** the website assistant must pass **120 cases across 15 metrics** before it ships.
+- **Cost:** plain business questions are answered with SQL at **$0**; hybrid full-text + pgvector retrieval handles the rest.
+- **Security:** default-deny JWT/JWKS gateway, PostgreSQL row-level security, signed idempotent webhooks, and **121 backend tests** with automatic rollback.
+- **Scale:** **15 trade dashboards** and **211 API routes**, built and run as the sole engineer.
 
-## Engineering projects
+<details>
+<summary><b>Stack behind CreAIve Labs</b></summary>
+<br>
 
-| Project | What I tested |
+Next.js · Supabase PostgreSQL · Python AI runtime with tenant-scoped rate and token/cost budgets · FastAPI · LangGraph · Temporal · Redis · MCP · OpenTelemetry · k3s Kubernetes on Oracle Cloud
+
+</details>
+
+## 🛠️ Engineering projects
+
+| Project | What it proves |
 | --- | --- |
-| [Kafka payments benchmark](https://github.com/creAIveLabs-Test/kafka-payments-pipeline-benchmark) | A Java pipeline processed **2 million transactions at 56,638 tx/s** on my Windows i7. In a separate three-broker run, I killed one broker midstream. Throughput recovered in **8 seconds**, and all 2 million transactions reached PostgreSQL with zero duplicate ledger rows. |
-| [AdRank](https://github.com/creAIveLabs-Test/adrank) | I built a simulator to test which ad a user should see. Across **13,500 simulated impressions**, ranking by bid × predicted click probability earned **43% more revenue per 1,000 impressions** than ranking by click probability alone. Click-through rate fell from **6.73% to 5.21%**. |
-| [HumanQA](https://humanqa.ai) | I built a TypeScript SDK that tests what an AI agent actually did. In the refund demo, deleting the customer record fails the test, returns exit code `1`, and links the failure to the recorded action. |
-| [Weather SDK](https://github.com/creAIveLabs-Test/Weather-SDK) | A public Python SDK project. |
+| [**Kafka payments benchmark**](https://github.com/creAIveLabs-Test/kafka-payments-pipeline-benchmark) | Java pipeline with idempotent producers, Kafka Streams (RocksDB state), cache-aside enrichment, and a ledger committed *before* offsets. **56,638 tx/s**, p50 **92 ms** at a fixed 20K tx/s, all **24.4M** IBM TabFormer rows replayed, and a broker kill survived with zero lost or duplicate rows. |
+| [**AdRank**](https://github.com/creAIveLabs-Test/adrank) | Ad-ranking simulator showing why the "best click rate" ad isn't the best ad: bid × predicted CTR earned **43% more revenue per 1K impressions**. |
+| [**HumanQA**](https://humanqa.ai) | TypeScript SDK that tests what an AI agent *actually did*, not what it said. In the refund demo, deleting the customer record fails the test with exit code `1` and links the failure to the recorded action. |
+| [**Weather SDK**](https://github.com/creAIveLabs-Test/Weather-SDK) | A public Python SDK. |
 
-## What I’m learning · GPU memory and CUDA C++
+## 🔬 Lab notebook · GPU memory and CUDA C++
 
-I’m writing small kernels on my **NVIDIA RTX 2070 Max-Q** to understand where execution time goes. I started with vector addition on **1,048,576 floats**. My first timing was inflated by **17×**. After warming up the GPU and measuring 100 launches with CUDA events, I got **0.043 ms per launch** and **294 GB/s effective memory bandwidth**.
+Running small kernels on an **NVIDIA RTX 2070 Max-Q** to learn where execution time really goes.
 
-Next I’m testing pinned host memory, overlapping transfers with CUDA streams, and comparing a tiled matrix multiplication kernel against cuBLAS.
+- [x] Vector addition on **1,048,576 floats**: fixed a **17×** timing error, measured **0.043 ms** per launch and **294 GB/s** effective bandwidth
+- [ ] Pinned host memory vs pageable transfers
+- [ ] Overlapping transfers and compute with CUDA streams
+- [ ] Tiled matrix multiplication vs cuBLAS
 
-## Professional experience
+## 💼 Experience
 
-**Index Systems Inc. · Software Development Engineer, AI · Jun 2026–present**  
-I build backend services for a platform spanning **8 business modules**. My work includes **20+ REST endpoints** and an AI-assisted migration that converted **2,000+ legacy files into 7,500+ PostgreSQL records**. Validation checks, retries, and explicit write decisions helped achieve **95% field-level accuracy** and **97% automation**. I also mentor an engineering intern.
+**Index Systems Inc.** · Software Development Engineer, AI · *Jun 2026 – present*  
+Backend for a platform spanning **8 business modules** and **20+ REST endpoints**. Built an AI-assisted migration that turned **2,000+ legacy files into 7,500+ PostgreSQL records** at **95% field-level accuracy** and **97% automation**, with PASS / FAIL / UNKNOWN write gates so nothing uncertain lands in the database. Mentor an engineering intern.
 
-**Tekrubix · AI Engineer, Supply Chain Systems · Feb 2025–May 2026**  
-I built Kafka and PySpark pipelines processing **about 1 million records per day** for inventory, shipment, and delivery visibility across **60+ stores**. I also built a FastAPI assistant that retrieved supply-chain data with SQL, validated model responses, and handled failures. I evaluated it on **300+ queries**, with **p95 response time under 4 seconds**.
+**Tekrubix** · AI Engineer, Supply Chain Systems · *Feb 2025 – May 2026*  
+Kafka and PySpark pipelines on Databricks and Delta Lake processing **~1M records/day** for inventory, shipment, and delivery visibility across **60+ stores**. Built a FastAPI supply-chain assistant with SQL retrieval and validated structured outputs, evaluated on **300+ queries** at **p95 under 4 s**.
 
-## Tools I work with
+## 🧰 Toolbox
 
-- **Backend and applications:** Python, Java, TypeScript, SQL, FastAPI, React, Next.js, React Native
-- **Data and streaming:** Kafka, Kafka Streams, PostgreSQL, Redis, PySpark, Databricks, Delta Lake
-- **AI systems:** Claude, OpenAI APIs, LangGraph, pgvector, tool calling, retrieval evaluation
-- **Delivery and testing:** Docker, Kubernetes, Helm, GitHub Actions, Temporal, OpenTelemetry, pytest, Playwright
+| | |
+| --- | --- |
+| **Backend & apps** | Python · Java · TypeScript · SQL · FastAPI · Pydantic · Next.js · React · React Native |
+| **Data & streaming** | Kafka · Kafka Streams · PySpark · Databricks · Delta Lake · PostgreSQL · Redis · Temporal |
+| **AI systems** | Claude · OpenAI APIs · LangGraph · RAG · pgvector · tool calling · MCP · golden-set evals · MLflow |
+| **Delivery & quality** | Docker · Kubernetes · Helm · GitHub Actions · OpenTelemetry · pytest · Playwright · PostgreSQL RLS |
 
-## Education
+## 🎓 Education
 
-**M.S. in Computer Science** · George Mason University, Fairfax, Virginia · 2024  
-**B.Tech. in Computer Science** · Sri Venkateswara University, Tirupati, India · 2022
+**M.S., Computer Science and Engineering** · George Mason University, Fairfax, VA · 2024  
+**B.Tech.** · Sri Venkateswara University, Tirupati, India · 2022
 
-## Contact
+---
 
-I’m interested in software engineering and applied AI roles where I can build a product, measure how it behaves, and improve the systems behind it.
-
-[LinkedIn](https://www.linkedin.com/in/vkrnemilidinne/) · [Email](mailto:hello@creaivelabs.com)
+<p align="center">
+  I'm looking for <b>software engineering and applied AI roles</b> where I can build the product, measure how it behaves, and improve the systems behind it.<br><br>
+  <a href="https://www.linkedin.com/in/vkrnemilidinne/">LinkedIn</a> · <a href="mailto:hello@creaivelabs.com">hello@creaivelabs.com</a>
+</p>
