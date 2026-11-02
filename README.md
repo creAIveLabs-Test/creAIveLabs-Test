@@ -1,22 +1,4 @@
-\<img src="./Pixel%20art%20developer%20studio%2C%20city%20skyline.png" width="100%" alt="Pixel-art developer studio overlooking a city skyline, with screens showing LiveKaart, CreAIve Labs, and CUDA experiments.">
-
-<h1 align="center">Varun Kumar Reddy Nemilidinne</h1>
-
-<p align="center">
-  <b>Software & AI Engineer</b> · Backend · Streaming Data · Production AI · Virginia, USA
-</p>
-
-<p align="center">
-  <a href="https://livekaart.com"><img src="https://img.shields.io/badge/LiveKaart-live-8B1E1E?style=flat-square" alt="LiveKaart"></a>
-  <a href="https://creaivelabs.com"><img src="https://img.shields.io/badge/CreAIve%20Labs-live-8B1E1E?style=flat-square" alt="CreAIve Labs"></a>
-  <a href="https://humanqa.ai"><img src="https://img.shields.io/badge/HumanQA-building-555555?style=flat-square" alt="HumanQA"></a>
-  <a href="https://www.linkedin.com/in/vkrnemilidinne/"><img src="https://img.shields.io/badge/LinkedIn-connect-0A66C2?style=flat-square&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
-  <a href="mailto:hello@creaivelabs.com"><img src="https://img.shields.io/badge/Email-say%20hello-222222?style=flat-square&logo=gmail&logoColor=white" alt="Email"></a>
-</p>
-
-<p align="center">
-  <i>I build systems, then try to break them, then write down the numbers.</i>
-</p>
+<img src="./Pixel%20art%20developer%20studio%2C%20city%20skyline.png" width="100%" alt="Pixel-art developer studio overlooking a city skyline, with screens showing LiveKaart, CreAIve Labs, and CUDA experiments."> <h1 align="center">Varun Kumar Reddy Nemilidinne</h1> <p align="center"> <b>Software & AI Engineer</b> · Backend · Streaming Data · Production AI · Virginia, USA </p> <p align="center"> <a href="https://livekaart.com"><img src="https://img.shields.io/badge/LiveKaart-live-8B1E1E?style=flat-square" alt="LiveKaart"></a> <a href="https://creaivelabs.com"><img src="https://img.shields.io/badge/CreAIve%20Labs-live-8B1E1E?style=flat-square" alt="CreAIve Labs"></a> <a href="https://humanqa.ai"><img src="https://img.shields.io/badge/HumanQA-building-555555?style=flat-square" alt="HumanQA"></a> <a href="https://www.linkedin.com/in/vkrnemilidinne/"><img src="https://img.shields.io/badge/LinkedIn-connect-0A66C2?style=flat-square&logo=linkedin&logoColor=white" alt="LinkedIn"></a> <a href="mailto:hello@creaivelabs.com"><img src="https://img.shields.io/badge/Email-say%20hello-222222?style=flat-square&logo=gmail&logoColor=white" alt="Email"></a> </p> <p align="center"> <i>I build systems, then try to break them, then write down the numbers.</i> </p>
 
 ---
 
